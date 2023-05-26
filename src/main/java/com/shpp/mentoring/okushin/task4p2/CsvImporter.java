@@ -28,14 +28,14 @@ public class CsvImporter {
 
             StringBuilder cql = new StringBuilder("INSERT INTO ");
             cql.append(tableName);
-            cql.append("(id,");
+            cql.append("(");
             for (int i = 0; i < header.length; i++) {
                 cql.append(header[i]);
                 if (i != header.length - 1) {
                     cql.append(",");
                 }
             }
-            cql.append(") VALUES (?,");
+            cql.append(") VALUES (");
             for (int i = 0; i < header.length; i++) {
                 cql.append("?");
                 if (i != header.length - 1) {
@@ -43,19 +43,23 @@ public class CsvImporter {
                 }
             }
             cql.append(")");
+            System.out.println();
+            System.out.println();
+            System.out.println(cql);
+            System.out.println();
+            System.out.println();
             PreparedStatement statement = session.prepare(String.valueOf(cql));
 
-            int count = 0;
+            //int count = 0;
             while ((nextLine = reader.readNext()) != null) {
                 BoundStatement bound = statement.bind()
-
-                        .setInt(0, count)
-                        .setString(1, nextLine[0])
+                        .setInt(0, Integer.parseInt(nextLine[0]))
+                        .setString(1, nextLine[1])
                         .setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM);
 
 
                 session.execute(bound);
-                count++;
+              //  count++;
             }
         }catch (CsvValidationException e) {
             logger.error("Error while validation CSV file: {} ", e.getMessage());
