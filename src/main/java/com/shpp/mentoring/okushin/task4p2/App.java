@@ -30,8 +30,7 @@ public class App {
         int numberDeliveryThreads = PropertyManager.getIntPropertiesValue("numberDeliveryThreads", prop);
         int amountProducts = PropertyManager.getIntPropertiesValue("amountProducts", prop);
         logger.info("All necessary data were successfully read from property file");
-        int amountForMainThreads = amountProducts / (numberGenerateThreads-1);
-
+        int amountForMainThreads = amountProducts / (numberGenerateThreads - 1);
         int amountForAdditionalThread = amountProducts - amountForMainThreads * (numberGenerateThreads - 1);
 
 
@@ -40,8 +39,11 @@ public class App {
         try (CqlSession session = CqlSession.builder().withConfigLoader(loader).build()) {
             logger.info("CqlSession was successfully set up");
             try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
-
-                CsvImporter.importToDB(session, "stores.csv", "\"epicentrRepo\".stores");
+                cqlExecutor.executeCqlScript(session,"deleteTableIfExistsScript.cql");
+                Thread.sleep(10000);
+                cqlExecutor.executeCqlScript(session, "DdlScripForCreatingTables.cql");
+                Thread.sleep(20000);
+               CsvImporter.importToDB(session, "stores.csv", "\"epicentrRepo\".stores");
                 CsvImporter.importToDB(session, "types.csv", "\"epicentrRepo\".productTypes");
 
                 SimpleStatement countTypesStatement =
@@ -57,7 +59,7 @@ public class App {
                 ProductGenerator productGenerator = new ProductGenerator(validator);
                 watch.start();
 
-                for (int i = 0; i < numberGenerateThreads-1; i++) {
+                for (int i = 0; i < numberGenerateThreads - 1; i++) {
                     executorService.submit(new GenerateThread(session, productGenerator, amountForMainThreads, typesCount));
                 }
                 executorService.submit(new GenerateThread(session, productGenerator, amountForAdditionalThread, typesCount));

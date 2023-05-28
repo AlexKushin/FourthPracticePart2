@@ -22,10 +22,7 @@ public class CsvImporter {
 
         try (CSVReader reader = new CSVReader(new FileReader(csvFilePath))) {
             String[] nextLine;
-
             String[] header = reader.readNext();
-
-
             StringBuilder cql = new StringBuilder("INSERT INTO ");
             cql.append(tableName);
             cql.append("(");
