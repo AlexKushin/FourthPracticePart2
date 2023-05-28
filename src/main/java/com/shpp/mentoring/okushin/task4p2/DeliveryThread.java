@@ -36,22 +36,9 @@ public class DeliveryThread implements Runnable {
         List<BatchableStatement<?>> statementList = new ArrayList<>();
         String cql = "insert into \"epicentrRepo\".delivery (id,deliveryDateTime, type,store, name) values (? ,toUnixTimestamp(now()),?,?,?)";
         PreparedStatement statement = session.prepare(cql);
-       /* System.out.println();
-        System.out.println();
-        System.out.println("resRow.size = " + resRow.size());
-        System.out.println();
-        System.out.println();
-
-        */
-        //int deliveryProdCount = 0;
         for (Row row : resRow) {
             BoundStatement bound = statement.bind(row.getUuid("id"),row.getInt("type"),
                             random.nextInt(storesCount + 1),row.getString("name"));
-                    //.setUuid(0, row.getUuid("id"))
-                    //.setInt(1, row.getInt("type"))
-                    //.setInt(2, random.nextInt(storesCount + 1))
-                    //.setString(3, row.getString("name"));
-         //   deliveryProdCount++;
             statementList.add(bound);
             batchCount++;
             if (batchCount > 0 && batchCount % batchSize == 0) {
@@ -60,13 +47,5 @@ public class DeliveryThread implements Runnable {
             }
         }
         cqlExecutor.executeBatch(session, statementList);
-        /*System.out.println();
-        System.out.println();
-        System.out.println("deliveryProdCount = " + deliveryProdCount);
-        System.out.println();
-        System.out.println();
-
-
-         */
     }
 }

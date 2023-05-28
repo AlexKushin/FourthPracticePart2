@@ -33,9 +33,7 @@ public class Delivery {
 
         for (int i = 0; i< numberThreads; i++){
             service.submit(new DeliveryThread(resRowList,session,storesCount));
-            System.out.println("pause");
             Thread.sleep(500);
-
         }
         service.shutdown();
     }

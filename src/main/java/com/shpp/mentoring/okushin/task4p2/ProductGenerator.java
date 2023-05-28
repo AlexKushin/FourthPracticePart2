@@ -22,6 +22,7 @@ public class ProductGenerator {
 
 
     public ProductGenerator(Validator validator) {
+        logger.info("ProductGenerator instance created");
         this.validator = validator;
 
     }
@@ -32,21 +33,24 @@ public class ProductGenerator {
         final AtomicInteger totalQuantity = new AtomicInteger(0);
         int batchCount = 0;
         int batchSize = 30;
+        logger.debug("Batch size  = {}", batchSize);
         StopWatch watch = new StopWatch();
         CqlExecutor cqlExecutor = new CqlExecutor();
         watch.start();
         String cql = "INSERT INTO \"epicentrRepo\".\"products\" (id,type,name) VALUES" + " (now(), ?, ? ) IF NOT EXISTS ";
+        logger.debug("----------------------------------------");
+        logger.debug("CQL command for insert to Products table: {}",cql);
+        logger.debug("----------------------------------------");
         int leftAmount = amount;
 
         List<BatchableStatement<?>> statementList = new ArrayList<>();
         PreparedStatement statement = session.prepare(cql);
 
         while (leftAmount > 0) {
-            Product p = new Product(RandomStringUtils.randomAlphabetic(10), random.nextInt(typesCount + 1), random.nextInt(120) );
+            Product p = new Product(RandomStringUtils.randomAlphabetic(10),
+                    random.nextInt(typesCount + 1), random.nextInt(120) );
             if (validator.validate(p).isEmpty()) {
                 BoundStatement bound = statement.bind( p.getTypeId(),p.getName());
-                       // .setInt(0, p.getTypeId())
-                      //  .setString(1, p.getName());
 
                 // Consistency level LOCAL_ONE is not supported for this operation.
                 // Supported consistency levels are: LOCAL_QUORUM
@@ -69,7 +73,7 @@ public class ProductGenerator {
         double elapsedSeconds = watch.getTime() / 1000.0;
         double messagesPerSecond = totalQuantity.get() / elapsedSeconds;
         logger.info("batchSize = {}", batchSize);
-        logger.info("GENERATING SPEED: {} , total = {} messages, elapseSeconds = {}",
+        logger.info("GENERATING SPEED: {} , total = {} products, elapseSeconds = {}",
                 messagesPerSecond, totalQuantity.get(), elapsedSeconds);
 
     }
