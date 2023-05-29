@@ -9,15 +9,15 @@ public class Product {
     //@Size(min = 7, message = "Name must be more than 7 characters") //medium
     //@Pattern(regexp = ".*a.*") //hard
     String name;
-   // @Min(1)
+    @Min(1)
     @Max(120)
     int typeId;
-  //  LocalDateTime expirationDate;
+    //  LocalDateTime expirationDate;
 
     public Product(String name, int typeId, int shelfLife) {
         this.name = name;
         this.typeId = typeId;
-    //    expirationDate = LocalDateTime.now().plusMonths(shelfLife);
+        //    expirationDate = LocalDateTime.now().plusMonths(shelfLife);
 
     }
 

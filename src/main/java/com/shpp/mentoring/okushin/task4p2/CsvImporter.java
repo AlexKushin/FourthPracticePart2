@@ -18,7 +18,7 @@ public class CsvImporter {
 
     private static final Logger logger = LoggerFactory.getLogger(CsvImporter.class);
 
-    public static void importToDB(CqlSession session, String csvFilePath, String tableName) {
+    public  void importToDB(CqlSession session, String csvFilePath, String tableName) {
 
         try (CSVReader reader = new CSVReader(new FileReader(csvFilePath))) {
             String[] nextLine;

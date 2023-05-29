@@ -14,17 +14,23 @@ import java.util.Random;
 
 public class DeliveryThread implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(DeliveryThread.class);
-    private final int storesCount;
+    private  int storesCount;
     Random random;
     List<Row> resRow;
     CqlSession session;
+    CqlExecutor cqlExecutor;
 
-    public DeliveryThread(List<Row> resRow, CqlSession session, int storesCount) {
+    public DeliveryThread(List<Row> resRow, CqlSession session, int storesCount, CqlExecutor cqlExecutor) {
 
         random = new Random();
         this.resRow = resRow;
         this.session = session;
         this.storesCount = storesCount;
+        this.cqlExecutor = cqlExecutor;
+    }
+
+    public DeliveryThread() {
+
     }
 
     @Override
@@ -32,13 +38,15 @@ public class DeliveryThread implements Runnable {
         logger.info("DeliveryThread starts");
         int batchCount = 0;
         int batchSize = 30;
-        CqlExecutor cqlExecutor = new CqlExecutor();
+        int prodCounter = 0;
+        //cqlExecutor = new CqlExecutor();
         List<BatchableStatement<?>> statementList = new ArrayList<>();
         String cql = "insert into \"epicentrRepo\".delivery (id,deliveryDateTime, type,store, name) values (? ,toUnixTimestamp(now()),?,?,?)";
         PreparedStatement statement = session.prepare(cql);
         for (Row row : resRow) {
-            BoundStatement bound = statement.bind(row.getUuid("id"),row.getInt("type"),
-                            random.nextInt(storesCount + 1),row.getString("name"));
+            BoundStatement bound = statement.bind(row.getUuid("id"), row.getInt("type"),
+                    random.nextInt(storesCount) + 1, row.getString("name"));
+            prodCounter++;
             statementList.add(bound);
             batchCount++;
             if (batchCount > 0 && batchCount % batchSize == 0) {
@@ -47,5 +55,10 @@ public class DeliveryThread implements Runnable {
             }
         }
         cqlExecutor.executeBatch(session, statementList);
+        logger.info("                                                         ");
+        logger.info("*********************************************************");
+        logger.info(" Number of products delivered by thread: {}", prodCounter);
+        logger.info("*********************************************************");
+        logger.info("                                                         ");
     }
 }
