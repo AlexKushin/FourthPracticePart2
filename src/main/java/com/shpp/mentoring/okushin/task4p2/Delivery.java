@@ -14,13 +14,13 @@ import java.util.concurrent.Executors;
 
 public class Delivery {
     private static final Logger logger = LoggerFactory.getLogger(Delivery.class);
-    CqlSession session;
-    int numberThreads;
-    private final int storesCount;
-    Random random;
-    CqlExecutor cqlExecutor;
+   private CqlSession session;
+    private int numberThreads;
+    private  int storesCount;
+     Random random;
+    private CqlExecutor cqlExecutor;
 
-    boolean isDeliveryFinished=false;
+    private boolean isDeliveryFinished=false;
 
     public Delivery(CqlSession session, int numberThreads, int storesCount,  CqlExecutor cqlExecutor) {
         random = new Random();
@@ -29,6 +29,7 @@ public class Delivery {
         this.storesCount = storesCount;
         this.cqlExecutor = cqlExecutor;
     }
+    public Delivery(){}
 
 
     public void deliverToStore() throws InterruptedException {
@@ -54,6 +55,5 @@ public class Delivery {
     public boolean isDeliveryFinished(){
         return  this.isDeliveryFinished;
     }
-
 
 }

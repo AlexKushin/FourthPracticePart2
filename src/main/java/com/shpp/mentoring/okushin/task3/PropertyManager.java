@@ -5,6 +5,7 @@ import com.shpp.mentoring.okushin.task4p2.App;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,8 +30,15 @@ public class PropertyManager {
      * @param prop     - reference to Property object for storing read property file
      */
     public static void readPropertyFile(String fileName, Properties prop) {
+        try (FileInputStream inputStream = new FileInputStream(fileName);
+             InputStreamReader isr = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
+            prop.load(isr);
+            logger.debug("Property was successfully read");
+        } catch (IOException e) {
+            logger.error("Can't read property file{}", e.getMessage(), e);
 
-        try (InputStream inputStream = App.class.getClassLoader().getResourceAsStream(fileName)) {
+        }
+       /* try (InputStream inputStream = App.class.getClassLoader().getResourceAsStream(fileName)) {
             assert inputStream != null;
             try (InputStreamReader isr = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
                 prop.load(isr);
@@ -39,6 +47,8 @@ public class PropertyManager {
         } catch (IOException e) {
             logger.error("Can't read property file{}", e.getMessage(), e);
         }
+
+        */
     }
 
     /**

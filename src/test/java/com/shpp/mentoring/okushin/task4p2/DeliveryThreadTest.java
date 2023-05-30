@@ -19,20 +19,16 @@ class DeliveryThreadTest extends DeliveryThread {
     CqlExecutor cqlExecutorMock = mock(CqlExecutor.class);
     @Mock
     CqlSession sessionMock = mock(CqlSession.class);
-
     List <Row> listRowMock = new ArrayList<>();
 
     List <BatchableStatement<?>> listBatchMock = new ArrayList<>();
-   /* public DeliveryThreadTest(List<Row> resRow, CqlSession session, int storesCount, CqlExecutor cqlExecutor) {
-        super(resRow, session, storesCount, cqlExecutor);
-    }
-
-    */
 
     @Test
     void testRun() {
+
+
         DeliveryThread deliveryThread = new DeliveryThread(listRowMock,sessionMock,10,cqlExecutorMock);
         deliveryThread.run();
-        Mockito.verify(cqlExecutorMock, times(1)).executeBatch(sessionMock,listBatchMock);
+        Mockito.verify(cqlExecutorMock).executeBatch(sessionMock,listBatchMock);
     }
 }

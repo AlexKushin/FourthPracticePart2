@@ -7,6 +7,7 @@ import org.mockito.Mockito;
 import java.io.IOException;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 
 class CsvImporterTest extends CsvImporter {
 
@@ -16,6 +17,7 @@ class CsvImporterTest extends CsvImporter {
     @Test
     void testImportToDB() throws IOException, InterruptedException {
         csvImporterMock.importToDB(sessionMock, "csvFile", "tableName");
-        Mockito.verify(csvImporterMock).importToDB(sessionMock, "csvFile", "tableName");
+        csvImporterMock.importToDB(sessionMock, "csvFile", "tableName");
+        Mockito.verify(csvImporterMock, times(2)).importToDB(sessionMock, "csvFile", "tableName");
     }
 }

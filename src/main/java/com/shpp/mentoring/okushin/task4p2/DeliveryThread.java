@@ -39,7 +39,6 @@ public class DeliveryThread implements Runnable {
         int batchCount = 0;
         int batchSize = 30;
         int prodCounter = 0;
-        //cqlExecutor = new CqlExecutor();
         List<BatchableStatement<?>> statementList = new ArrayList<>();
         String cql = "insert into \"epicentrRepo\".delivery (id,deliveryDateTime, type,store, name) values (? ,toUnixTimestamp(now()),?,?,?)";
         PreparedStatement statement = session.prepare(cql);

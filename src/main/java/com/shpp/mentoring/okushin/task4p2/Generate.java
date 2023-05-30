@@ -18,7 +18,7 @@ public class Generate {
     ExecutorService executorService;
     Validator validator;
     int productAmount;
-    boolean isGeneratingFinished =false;
+    boolean isGeneratingFinished = false;
 
     public Generate(CqlSession session, int numberThreads, int typesCount, Validator validator, int productAmount) {
         random = new Random();
@@ -27,20 +27,21 @@ public class Generate {
         this.typesCount = typesCount;
         this.validator = validator;
         this.productAmount = productAmount;
-         executorService = Executors.newFixedThreadPool(numberThreads);
+        executorService = Executors.newFixedThreadPool(numberThreads);
     }
 
 
     public void createProducts() {
+        CqlExecutor cqlExecutor = new CqlExecutor();
         int amountForMainThreads = productAmount / (numberThreads - 1);
         int amountForAdditionalThread = productAmount - amountForMainThreads * (numberThreads - 1);
         logger.info("Validator instance created");
         ProductGenerator productGenerator = new ProductGenerator(validator);
 
         for (int i = 0; i < numberThreads - 1; i++) {
-            executorService.submit(new GenerateThread(session, productGenerator, amountForMainThreads, typesCount));
+            executorService.submit(new GenerateThread(session, productGenerator, cqlExecutor, amountForMainThreads, typesCount));
         }
-        executorService.submit(new GenerateThread(session, productGenerator, amountForAdditionalThread, typesCount));
+        executorService.submit(new GenerateThread(session, productGenerator,cqlExecutor, amountForAdditionalThread, typesCount));
         executorService.shutdown();
         while (true) {
             if (executorService.isTerminated()) {
@@ -50,7 +51,8 @@ public class Generate {
             }
         }
     }
-    public boolean isGeneratingFinished(){
-        return  this.isGeneratingFinished;
+
+    public boolean isGeneratingFinished() {
+        return this.isGeneratingFinished;
     }
 }

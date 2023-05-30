@@ -20,13 +20,14 @@ public class App {
 
 
     public static void main(String[] args) {
-
         StopWatch watch = new StopWatch();
         CqlExecutor cqlExecutor = new CqlExecutor();
         CsvImporter csvImporter = new CsvImporter();
+
         Properties prop = new Properties();
         PropertyManager.readPropertyFile("prop.properties", prop);
         logger.info("Property file was successfully read");
+
         int numberGenerateThreads = PropertyManager.getIntPropertiesValue("numberGenerateThreads", prop);
         int numberDeliveryThreads = PropertyManager.getIntPropertiesValue("numberDeliveryThreads", prop);
         int amountProducts = PropertyManager.getIntPropertiesValue("amountProducts", prop);
@@ -59,10 +60,10 @@ public class App {
                 logger.info("Validator instance created");
                 watch.start();
 
-                Generate genera = new Generate(session, numberGenerateThreads, typesCount, validator, amountProducts);
-                genera.createProducts();
+                Generate generate = new Generate(session, numberGenerateThreads, typesCount, validator, amountProducts);
+                generate.createProducts();
                 while (true) {
-                    if (genera.isGeneratingFinished()) {
+                    if (generate.isGeneratingFinished()) {
                         watch.stop();
                         double generatingTime = watch.getTime() / 1000.0;
                         double productsPerSecond = amountProducts / generatingTime;
@@ -98,23 +99,9 @@ public class App {
                                     }
                                 }
                                 double filingAvailableTime = watch.getTime() / 1000.0;
-                                logger.info("                                                           ");
-                                logger.info("************************************************************");
-                                logger.info("GENERATING SPEED by {} threads: {} , total = {} products, elapseSeconds = {}"
-                                        , numberGenerateThreads, productsPerSecond, amountProducts, generatingTime);
-                                logger.info("DELIVERY SPEED by {} threads: {} , total = {} products, elapseSeconds = {}"
-                                        , numberDeliveryThreads, deliveriesPerSecond,
-                                        amountProducts * numberDeliveryThreads, deliveryTime);
-                                logger.info("FILLING AVAILABLE SPEED: {} ", filingAvailableTime);
-                                logger.info("************************************************************");
-                                logger.info("                                                           ");
                                 watch.reset();
                                 String productType = System.getProperty("productType");
-                                logger.info("                                                           ");
-                                logger.info("************************************************************");
-                                logger.info("PRODUCT TYPE FOR SEARCH BY MAX AMOUNT IN STORE : {}", productType);
-                                logger.info("************************************************************");
-                                logger.info("                                                           ");
+
 
                                 Row resRowTypeID = cqlExecutor.executeCqlPreparedStatement(session,
                                         "select id from \"epicentrRepo\".producttypes where producttype = ?",
@@ -129,19 +116,24 @@ public class App {
                                         resRowTypeID.getInt(0)).one();
 
                                 watch.stop();
+                                assert resStoreId != null;
                                 Row resRowStoreAddress = cqlExecutor.executeCqlPreparedStatement(session,
                                         "SELECT storeaddress FROM \"epicentrRepo\".stores WHERE id =?",
                                         resStoreId.getInt(0)).one();
 
-                                double searchStoreTime = watch.getTime() / 1000.0;
-                                logger.info("                                                           ");
-                                logger.info("************************************************************");
-                                logger.info("SEARCH STORE TIME: {}s", searchStoreTime);
-                                logger.info("************************************************************");
-                                logger.info("                                                           ");
+                                double searchStoreIdTime = watch.getTime() / 1000.0;
+
                                 logger.info("                                                           ");
                                 logger.info("************************************************************");
                                 assert resRowStoreAddress != null;
+                                logger.info("GENERATING SPEED by {} threads: {} , total = {} products, elapseSeconds = {}"
+                                        , numberGenerateThreads, productsPerSecond, amountProducts, generatingTime);
+                                logger.info("DELIVERY SPEED by {} threads: {} , total = {} products, elapseSeconds = {}"
+                                        , numberDeliveryThreads, deliveriesPerSecond,
+                                        amountProducts * numberDeliveryThreads, deliveryTime);
+                                logger.info("FILLING AVAILABLE SPEED: {} ", filingAvailableTime);
+                                logger.info("PRODUCT TYPE FOR SEARCH BY MAX AMOUNT IN STORE : {}", productType);
+                                logger.info("SEARCH STORE TIME: {}s", searchStoreIdTime);
                                 logger.info("MAX AMOUNT OF TYPE: {}, IN STORE {}", productType, resRowStoreAddress.getString(0));
                                 logger.info("************************************************************");
                                 logger.info("                                                           ");

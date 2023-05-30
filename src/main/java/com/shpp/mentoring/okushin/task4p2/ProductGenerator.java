@@ -17,8 +17,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProductGenerator {
     private static final Logger logger = LoggerFactory.getLogger(ProductGenerator.class);
-    private final Validator validator;
-    Random random = new Random();
+    private  Validator validator;
+    private final Random random = new Random();
 
 
     public ProductGenerator(Validator validator) {
@@ -26,16 +26,17 @@ public class ProductGenerator {
         this.validator = validator;
 
     }
+    public  ProductGenerator(){}
 
 
-    public void insertValidatedProducts(CqlSession session, int amount, int typesCount) {
+    public void insertValidatedProducts(CqlSession session, CqlExecutor cqlExecutor, int amount, int typesCount) {
 
         final AtomicInteger totalQuantity = new AtomicInteger(0);
         int batchCount = 0;
         int batchSize = 30;
         logger.debug("Batch size  = {}", batchSize);
         StopWatch watch = new StopWatch();
-        CqlExecutor cqlExecutor = new CqlExecutor();
+       // CqlExecutor cqlExecutor = new CqlExecutor();
         watch.start();
         String cql = "INSERT INTO \"epicentrRepo\".\"products\" (id,type,name) VALUES" + " (now(), ?, ? ) IF NOT EXISTS ";
         logger.debug("----------------------------------------");
@@ -48,7 +49,7 @@ public class ProductGenerator {
 
         while (leftAmount > 0) {
             Product p = new Product(RandomStringUtils.randomAlphabetic(10),
-                    random.nextInt(typesCount + 1), random.nextInt(120) );
+                    random.nextInt(typesCount + 1));
             if (validator.validate(p).isEmpty()) {
                 BoundStatement bound = statement.bind( p.getTypeId(),p.getName());
 

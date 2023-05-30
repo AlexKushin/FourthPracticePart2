@@ -14,10 +14,10 @@ public class Product {
     int typeId;
     //  LocalDateTime expirationDate;
 
-    public Product(String name, int typeId, int shelfLife) {
+    public Product(String name, int typeId) {
         this.name = name;
         this.typeId = typeId;
-        //    expirationDate = LocalDateTime.now().plusMonths(shelfLife);
+
 
     }
 
