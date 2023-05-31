@@ -12,15 +12,13 @@ public class GenerateThread implements Runnable {
     private int typesCount;
 
     private CqlSession session;
-    private CqlExecutor cqlExecutor;
 
 
-    public GenerateThread(CqlSession session, ProductGenerator productGenerator, CqlExecutor cqlExecutor, int amount, int typesCount) {
+    public GenerateThread(CqlSession session, ProductGenerator productGenerator, int amount, int typesCount) {
         this.productGenerator = productGenerator;
         this.amount = amount;
         this.typesCount = typesCount;
         this.session = session;
-        this.cqlExecutor = cqlExecutor;
     }
 
     public GenerateThread() {
@@ -30,7 +28,7 @@ public class GenerateThread implements Runnable {
     @Override
     public void run() {
         logger.info("GenerateThread starts");
-        productGenerator.insertValidatedProducts(session, cqlExecutor, amount, typesCount);
+        productGenerator.insertValidatedProducts(session, amount, typesCount);
 
     }
 }

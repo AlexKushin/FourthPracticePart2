@@ -12,19 +12,18 @@ CREATE TABLE IF NOT EXISTS "epicentrRepo".productTypes
 );
 CREATE TABLE IF NOT EXISTS "epicentrRepo".products
 (
-    id    timeuuid,
+    id    uuid,
     type  int,
     name  text,
-    PRIMARY KEY (id, type, name)
+    PRIMARY KEY (id)
 );
 CREATE TABLE IF NOT EXISTS "epicentrRepo".delivery
 (
-    id    timeuuid,
+    id    uuid,
     deliveryDateTime timestamp,
     type  int,
     store int,
-    name  text,
-    PRIMARY KEY ((store),type,id, deliveryDateTime,  name)
+    PRIMARY KEY ((store),type,id, deliveryDateTime)
 );
 CREATE TABLE IF NOT EXISTS "epicentrRepo".availability
 (

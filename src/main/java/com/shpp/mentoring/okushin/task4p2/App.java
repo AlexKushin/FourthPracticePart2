@@ -1,9 +1,10 @@
 package com.shpp.mentoring.okushin.task4p2;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
-import com.datastax.oss.driver.api.core.cql.*;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.shpp.mentoring.okushin.task3.PropertyManager;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
@@ -28,7 +29,7 @@ public class App {
         PropertyManager.readPropertyFile("prop.properties", prop);
         logger.info("Property file was successfully read");
 
-        int numberGenerateThreads = PropertyManager.getIntPropertiesValue("numberGenerateThreads", prop);
+        int numberGenerateThreads = PropertyManager.getIntPropertiesValue("numberGenerateThreads", prop)+1;
         int numberDeliveryThreads = PropertyManager.getIntPropertiesValue("numberDeliveryThreads", prop);
         int amountProducts = PropertyManager.getIntPropertiesValue("amountProducts", prop);
         logger.info("All necessary data were successfully read from property file");
@@ -59,41 +60,46 @@ public class App {
                 Validator validator = factory.getValidator();
                 logger.info("Validator instance created");
                 watch.start();
-
                 Generate generate = new Generate(session, numberGenerateThreads, typesCount, validator, amountProducts);
                 generate.createProducts();
                 while (true) {
+
                     if (generate.isGeneratingFinished()) {
                         watch.stop();
                         double generatingTime = watch.getTime() / 1000.0;
-                        double productsPerSecond = amountProducts / generatingTime;
+                        ResultSet resProd = session.execute("Select id from \"epicentrRepo\".products");
+                        int countProds = resProd.all().size();
+                        double productsPerSecond =  countProds/ generatingTime;
                         watch.reset();
                         Delivery delivery = new Delivery(session, numberDeliveryThreads, storesCount, cqlExecutor);
                         watch.start();
-                        delivery.deliverToStore();
+
+                            delivery.deliverToStore();
                         while (true) {
                             if (delivery.isDeliveryFinished()) {
                                 logger.info("Delivery has finished successfully");
                                 watch.stop();
                                 double deliveryTime = watch.getTime() / 1000.0;
-                                double deliveriesPerSecond = (amountProducts * numberDeliveryThreads) / deliveryTime;
+                                ResultSet resDeliv = session.execute("Select * from \"epicentrRepo\".delivery");
+                                int countDeliv = resDeliv.all().size();
+                                double deliveriesPerSecond = countDeliv / deliveryTime;
                                 watch.reset();
                                 String cqlForNumberProductsInStoreByType = "SELECT * FROM \"epicentrRepo\"." +
                                         "delivery WHERE type = ? and store = ? ";
 
                                 String cqlForInsertAvailability = "insert into \"epicentrRepo\"." +
                                         "availability (type, store, quantity) values (?,?,?) if not exists";
-
-                                PreparedStatement statementForIA = session.prepare(cqlForInsertAvailability);
+                                logger.debug("                                                    ");
+                                logger.debug("****************************************************");
+                                logger.debug("CQL ForNumberProductsInStoreByType: {}", cqlForNumberProductsInStoreByType);
+                                logger.debug("CQL ForInsertAvailability: {}", cqlForInsertAvailability);
+                                logger.debug("****************************************************");
+                                logger.debug("                                                    ");
                                 watch.start();
-                                for (int typeId = 0; typeId < typesCount; typeId++) {
-                                    for (int storeId = 0; storeId < storesCount; storeId++) {
+                                for (int typeId = 1; typeId <= typesCount; typeId++) {
+                                    for (int storeId = 1; storeId <= storesCount; storeId++) {
                                         ResultSet resultSet = cqlExecutor.executeCqlPreparedStatement(session,
                                                 cqlForNumberProductsInStoreByType, typeId, storeId);
-
-                                        BoundStatement boundForIA = statementForIA.bind(typeId, storeId, resultSet.all().size())
-                                                .setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM);
-                                        session.execute(boundForIA);
                                         cqlExecutor.executeCqlPreparedStatement(session,
                                                 cqlForInsertAvailability, typeId, storeId, resultSet.all().size());
                                     }
@@ -123,14 +129,16 @@ public class App {
 
                                 double searchStoreIdTime = watch.getTime() / 1000.0;
 
+
                                 logger.info("                                                           ");
                                 logger.info("************************************************************");
                                 assert resRowStoreAddress != null;
+                                logger.info("AmountProduct assign in property file = {}",amountProducts);
                                 logger.info("GENERATING SPEED by {} threads: {} , total = {} products, elapseSeconds = {}"
-                                        , numberGenerateThreads, productsPerSecond, amountProducts, generatingTime);
+                                        , numberGenerateThreads, productsPerSecond, countProds, generatingTime);
                                 logger.info("DELIVERY SPEED by {} threads: {} , total = {} products, elapseSeconds = {}"
                                         , numberDeliveryThreads, deliveriesPerSecond,
-                                        amountProducts * numberDeliveryThreads, deliveryTime);
+                                        countDeliv, deliveryTime);
                                 logger.info("FILLING AVAILABLE SPEED: {} ", filingAvailableTime);
                                 logger.info("PRODUCT TYPE FOR SEARCH BY MAX AMOUNT IN STORE : {}", productType);
                                 logger.info("SEARCH STORE TIME: {}s", searchStoreIdTime);
@@ -140,6 +148,8 @@ public class App {
                                 return;
                             }
                         }
+
+
                     }
                 }
             } catch (InterruptedException e) {

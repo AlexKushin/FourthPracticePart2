@@ -23,78 +23,49 @@ public class CqlExecutor {
                 .setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM)
                 .build();
         session.execute(batch);
-        logger.info("CqlBatch commands executed successfully");
+ //       logger.info("CqlBatch commands executed successfully");
     }
     public void executeCqlSimpleStatement(CqlSession session, String cqlQuery){
-        logger.debug("                                                    ");
-        logger.debug("****************************************************");
-        logger.debug("CQL SimpleStatement: {}", cqlQuery);
-        logger.debug("****************************************************");
-        logger.debug("                                                    ");
         SimpleStatement statement = SimpleStatement.newInstance(cqlQuery)
                         .setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM);
         session.execute(statement);
-        logger.info("Cql commands executed successfully");
+    //    logger.info("Cql commands executed successfully");
     }
     public ResultSet  executeCqlPreparedStatement(CqlSession session, String cqlQuery, Object p1){
-        logger.debug("                                                    ");
-        logger.debug("****************************************************");
-        logger.debug("CQL PreparedStatement: {}", cqlQuery);
-        logger.debug("****************************************************");
-        logger.debug("                                                    ");
         PreparedStatement statement = session.prepare(cqlQuery);
         BoundStatement bound = statement.bind(p1).setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM);
-        logger.info("Cql commands executed successfully");
+     //   logger.info("Cql commands executed successfully");
         return session.execute(bound);
     }
     public ResultSet  executeCqlPreparedStatement(CqlSession session, String cqlQuery, Object p1, Object p2){
-        logger.debug("                                                    ");
-        logger.debug("****************************************************");
-        logger.debug("CQL PreparedStatement: {}", cqlQuery);
-        logger.debug("****************************************************");
-        logger.debug("                                                    ");
+
         PreparedStatement statement = session.prepare(cqlQuery);
         BoundStatement bound = statement.bind(p1,p2).setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM);
-        logger.info("Cql commands executed successfully");
+     //   logger.info("Cql commands executed successfully");
         return session.execute(bound);
     }
     public ResultSet  executeCqlPreparedStatement(CqlSession session, String cqlQuery, Object p1, Object p2, Object p3){
-        logger.debug("                                                    ");
-        logger.debug("****************************************************");
-        logger.debug("CQL PreparedStatement: {}", cqlQuery);
-        logger.debug("****************************************************");
-        logger.debug("                                                    ");
         PreparedStatement statement = session.prepare(cqlQuery);
         BoundStatement bound = statement.bind(p1,p2,p3).setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM);
-        logger.info("Cql commands executed successfully");
+    //    logger.info("Cql commands executed successfully");
         return session.execute(bound);
     }
     public ResultSet  executeCqlPreparedStatement(CqlSession session, String cqlQuery, Object p1, Object p2, Object p3, Object p4){
-        logger.debug("                                                    ");
-        logger.debug("****************************************************");
-        logger.debug("CQL PreparedStatement: {}", cqlQuery);
-        logger.debug("****************************************************");
-        logger.debug("                                                    ");
         PreparedStatement statement = session.prepare(cqlQuery);
         BoundStatement bound = statement.bind(p1,p2,p3,p4).setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM);
-        logger.info("Cql commands executed successfully");
+    //    logger.info("Cql commands executed successfully");
         return session.execute(bound);
     }
     public void executeCqlScript(CqlSession session, String sqlFilePath) {
             String[] commands = readCqlScriptFromFile(sqlFilePath).split(";");
             for (String command : commands) {
                 if(!command.isBlank()) {
-                logger.debug("                                                    ");
-                logger.debug("****************************************************");
-                logger.debug("CQL COMMAND: {}", command);
-                logger.debug("****************************************************");
-                logger.debug("                                                    ");
                     SimpleStatement statement = SimpleStatement.newInstance(command)
                             .setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM);
                     session.execute(statement);
                 }
         }
-        logger.info("Cql commands executed successfully");
+   //     logger.info("Cql commands executed successfully");
     }
     private String readCqlScriptFromFile(String cqlFilePath) {
         try (BufferedReader br = new BufferedReader(new FileReader(cqlFilePath))) {
@@ -107,7 +78,7 @@ public class CqlExecutor {
             String cqlScript = sb.toString();
             logger.debug("                                                    ");
             logger.debug("****************************************************");
-            logger.debug("CQL SCRIPT:  {}", cqlScript);
+            logger.info("CQL SCRIPT:  {}", cqlScript);
             logger.debug("****************************************************");
             logger.debug("                                                    ");
             return cqlScript;

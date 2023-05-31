@@ -17,8 +17,8 @@ class GenerateThreadTest extends GenerateThread {
 
     @Test
     void testRun() {
-        GenerateThread generateThread = new GenerateThread(sessionMock,productGenerator, cqlExecutor,10,10);
+        GenerateThread generateThread = new GenerateThread(sessionMock,productGenerator,10,10);
         generateThread.run();
-        Mockito.verify(productGenerator).insertValidatedProducts(sessionMock, cqlExecutor,10,10);
+        Mockito.verify(productGenerator).insertValidatedProducts(sessionMock,10,10);
     }
 }

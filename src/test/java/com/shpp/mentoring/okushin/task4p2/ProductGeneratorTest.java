@@ -26,8 +26,10 @@ class ProductGeneratorTest extends ProductGenerator {
     Validator validator = mock(Validator.class);
     List<BatchableStatement<?>> listBatchMock = new ArrayList<>();
     ProductGenerator productGenerator = mock(ProductGenerator.class);
-    @Test
-    void testInsertValidatedProducts() {
+
+   /* void testInsertValidatedProducts() {
 
     }
+
+    */
 }

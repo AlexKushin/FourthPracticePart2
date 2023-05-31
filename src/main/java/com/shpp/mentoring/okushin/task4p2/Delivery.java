@@ -9,8 +9,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class Delivery {
     private static final Logger logger = LoggerFactory.getLogger(Delivery.class);
@@ -32,7 +34,7 @@ public class Delivery {
     public Delivery(){}
 
 
-    public void deliverToStore() throws InterruptedException {
+    public void deliverToStore() {
         String cqlForSelectProducts = "SELECT * FROM \"epicentrRepo\".products";
         SimpleStatement searchStoreStatement = SimpleStatement.newInstance(cqlForSelectProducts);
         ResultSet res = session.execute(searchStoreStatement);
@@ -40,8 +42,17 @@ public class Delivery {
         ExecutorService service = Executors.newFixedThreadPool(numberThreads);
 
         for (int i = 0; i< numberThreads; i++){
-            service.submit(new DeliveryThread(resRowList,session,storesCount,cqlExecutor));
-            Thread.sleep(1000);
+            Future<?> future =service.submit(new DeliveryThread(resRowList,session,storesCount,cqlExecutor));
+            try {
+                future.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt(); // Reset interrupted status
+                logger.error("Thread was interrupted {}", e.getMessage());
+            } catch (ExecutionException e) {
+                //Throwable exception = e.getCause();
+                logger.error("Error while execution task {}", e.getMessage());
+                // Forward to exception reporter
+            }
         }
         service.shutdown();
         while (true) {

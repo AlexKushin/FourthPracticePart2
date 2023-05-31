@@ -17,9 +17,5 @@ class DeliveryTest extends Delivery {
 
 
 
-    @Test
-    void testDeliverToStore() {
 
-
-    }
 }
