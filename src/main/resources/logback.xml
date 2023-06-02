@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="roll-by-time-and-size"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>slf4j/roll-by-time-and-size/app.log</file>
+        <maxFileSize>5KB</maxFileSize>
+        <maxHistory>1</maxHistory>
+        <totalSizeCap>10KB</totalSizeCap>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>
+               slf4j/roll-by-time-and-size/app.%d{yyyy-MM-dd}.%i.log.zip
+            </fileNamePattern>
+            <maxFileSize>100KB</maxFileSize>
+            <maxHistory>5</maxHistory>
+            <totalSizeCap>1MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %p %m%n</pattern>
+        </encoder>
+    </appender>
+   <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+    <append>true</append>
+    <encoder>
+        <pattern>%d{yyyy-MM-dd HH:mm:ss} %p %m%n</pattern>
+    </encoder>
+</appender>
+
+    <root level="info">
+        <appender-ref ref="roll-by-time-and-size" />
+
+        <appender-ref ref="Console" />
+    </root>
+</configuration>

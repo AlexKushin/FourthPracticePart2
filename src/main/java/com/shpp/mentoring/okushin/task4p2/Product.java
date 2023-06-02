@@ -2,7 +2,6 @@ package com.shpp.mentoring.okushin.task4p2;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import java.time.LocalDateTime;
 
 public class Product {
     //@NotNull(message = "Name cannot be null")
@@ -12,7 +11,6 @@ public class Product {
     @Min(1)
     @Max(120)
     int typeId;
-    //  LocalDateTime expirationDate;
 
     public Product(String name, int typeId) {
         this.name = name;

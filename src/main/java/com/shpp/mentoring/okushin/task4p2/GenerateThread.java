@@ -27,6 +27,7 @@ public class GenerateThread implements Runnable {
 
     @Override
     public void run() {
+
         logger.info("GenerateThread starts");
         productGenerator.insertValidatedProducts(session, amount, typesCount);
 

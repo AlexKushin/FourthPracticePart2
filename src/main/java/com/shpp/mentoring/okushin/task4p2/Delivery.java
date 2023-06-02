@@ -18,23 +18,18 @@ public class Delivery {
     private static final Logger logger = LoggerFactory.getLogger(Delivery.class);
    private CqlSession session;
     private int numberThreads;
-    private  int storesCount;
      Random random;
-    private CqlExecutor cqlExecutor;
-
     private boolean isDeliveryFinished=false;
 
-    public Delivery(CqlSession session, int numberThreads, int storesCount,  CqlExecutor cqlExecutor) {
+    public Delivery(CqlSession session, int numberThreads ) {
         random = new Random();
         this.session = session;
         this.numberThreads = numberThreads;
-        this.storesCount = storesCount;
-        this.cqlExecutor = cqlExecutor;
     }
     public Delivery(){}
 
 
-    public void deliverToStore() {
+    public void deliverToStore(int storesCount) {
         String cqlForSelectProducts = "SELECT * FROM \"epicentrRepo\".products";
         SimpleStatement searchStoreStatement = SimpleStatement.newInstance(cqlForSelectProducts);
         ResultSet res = session.execute(searchStoreStatement);
@@ -42,16 +37,17 @@ public class Delivery {
         ExecutorService service = Executors.newFixedThreadPool(numberThreads);
 
         for (int i = 0; i< numberThreads; i++){
-            Future<?> future =service.submit(new DeliveryThread(resRowList,session,storesCount,cqlExecutor));
-            try {
-                future.get();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt(); // Reset interrupted status
-                logger.error("Thread was interrupted {}", e.getMessage());
-            } catch (ExecutionException e) {
-                //Throwable exception = e.getCause();
-                logger.error("Error while execution task {}", e.getMessage());
-                // Forward to exception reporter
+            Future<?> future =service.submit(new DeliveryThread(resRowList,session,storesCount));
+            while (future.isDone()) {
+                try {
+                    future.get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt(); // Reset interrupted status - for a what???
+                    logger.error("Thread was interrupted {}", e.getMessage());
+                } catch (ExecutionException e) {
+                    logger.error("Error while execution task {}", e.getMessage());
+                    // Forward to exception reporter
+                }
             }
         }
         service.shutdown();

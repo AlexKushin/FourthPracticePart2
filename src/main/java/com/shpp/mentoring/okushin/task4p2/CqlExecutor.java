@@ -23,37 +23,31 @@ public class CqlExecutor {
                 .setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM)
                 .build();
         session.execute(batch);
- //       logger.info("CqlBatch commands executed successfully");
     }
     public void executeCqlSimpleStatement(CqlSession session, String cqlQuery){
         SimpleStatement statement = SimpleStatement.newInstance(cqlQuery)
                         .setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM);
         session.execute(statement);
-    //    logger.info("Cql commands executed successfully");
     }
     public ResultSet  executeCqlPreparedStatement(CqlSession session, String cqlQuery, Object p1){
         PreparedStatement statement = session.prepare(cqlQuery);
         BoundStatement bound = statement.bind(p1).setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM);
-     //   logger.info("Cql commands executed successfully");
         return session.execute(bound);
     }
     public ResultSet  executeCqlPreparedStatement(CqlSession session, String cqlQuery, Object p1, Object p2){
 
         PreparedStatement statement = session.prepare(cqlQuery);
         BoundStatement bound = statement.bind(p1,p2).setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM);
-     //   logger.info("Cql commands executed successfully");
         return session.execute(bound);
     }
     public ResultSet  executeCqlPreparedStatement(CqlSession session, String cqlQuery, Object p1, Object p2, Object p3){
         PreparedStatement statement = session.prepare(cqlQuery);
         BoundStatement bound = statement.bind(p1,p2,p3).setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM);
-    //    logger.info("Cql commands executed successfully");
         return session.execute(bound);
     }
     public ResultSet  executeCqlPreparedStatement(CqlSession session, String cqlQuery, Object p1, Object p2, Object p3, Object p4){
         PreparedStatement statement = session.prepare(cqlQuery);
         BoundStatement bound = statement.bind(p1,p2,p3,p4).setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM);
-    //    logger.info("Cql commands executed successfully");
         return session.execute(bound);
     }
     public void executeCqlScript(CqlSession session, String sqlFilePath) {
@@ -65,7 +59,6 @@ public class CqlExecutor {
                     session.execute(statement);
                 }
         }
-   //     logger.info("Cql commands executed successfully");
     }
     private String readCqlScriptFromFile(String cqlFilePath) {
         try (BufferedReader br = new BufferedReader(new FileReader(cqlFilePath))) {
@@ -78,7 +71,7 @@ public class CqlExecutor {
             String cqlScript = sb.toString();
             logger.debug("                                                    ");
             logger.debug("****************************************************");
-            logger.info("CQL SCRIPT:  {}", cqlScript);
+            logger.debug("CQL SCRIPT:  {}", cqlScript);
             logger.debug("****************************************************");
             logger.debug("                                                    ");
             return cqlScript;
