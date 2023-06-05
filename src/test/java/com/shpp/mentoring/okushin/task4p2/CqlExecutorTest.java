@@ -1,64 +1,69 @@
 package com.shpp.mentoring.okushin.task4p2;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.BatchStatement;
-import com.datastax.oss.driver.api.core.cql.BatchableStatement;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
+import com.datastax.oss.driver.api.core.cql.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-
-import java.util.List;
+import org.mockito.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 class CqlExecutorTest extends CqlExecutor {
+
+
     @Mock
-    CqlExecutor cqlExecutorMock = mock(CqlExecutor.class);
-    CqlSession sessionMock = mock(CqlSession.class);
-    BatchStatement batch = mock(BatchStatement.class);
-    List listMock = mock(List.class);
+    private CqlSession session;
 
-    @Test
-    void testExecuteBatch() {
-      cqlExecutorMock.executeBatch(sessionMock,listMock);
-        Mockito.verify(cqlExecutorMock).executeBatch(sessionMock,listMock);
-        //Mockito.verify(sessionMock).execute(batch);
+    @Mock
+    private PreparedStatement preparedStatement;
+
+    @Mock
+    private BoundStatement boundStatement;
+
+    @Mock
+    private ResultSet resultSet;
+    @Mock
+    SimpleStatement simpleStatementMock;
+    @InjectMocks
+    private CqlExecutor cqlExecutor;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
-    @Test
-    void testExecuteCqlSimpleStatement() {
-        cqlExecutorMock.executeCqlSimpleStatement(sessionMock,"123");
-        Mockito.verify(cqlExecutorMock).executeCqlSimpleStatement(sessionMock,"123");
-    }
 
     @Test
     void testExecuteCqlPreparedStatement() {
-        cqlExecutorMock.executeCqlPreparedStatement(sessionMock,"123","1");
-        Mockito.verify(cqlExecutorMock).executeCqlPreparedStatement(sessionMock,"123","1");
-    }
+        String cqlQuery = "SELECT * FROM my_table";
+        Object p1 = "parameter";
 
-    @Test
-    void testExecuteCqlPreparedStatement1() {
-        cqlExecutorMock.executeCqlPreparedStatement(sessionMock,"123","1","2");
-        Mockito.verify(cqlExecutorMock).executeCqlPreparedStatement(sessionMock,"123","1","2");
-    }
+        when(session.prepare(cqlQuery)).thenReturn(preparedStatement);
+        when(preparedStatement.bind(p1)).thenReturn(boundStatement);
+        when(boundStatement.setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM)).thenReturn(boundStatement);
+        when(session.execute(boundStatement)).thenReturn(resultSet);
 
-    @Test
-    void testExecuteCqlPreparedStatement2() {
-        cqlExecutorMock.executeCqlPreparedStatement(sessionMock,"123","1","2","3");
-        Mockito.verify(cqlExecutorMock).executeCqlPreparedStatement(sessionMock,"123","1","2","3");
-    }
+        ResultSet result = cqlExecutor.executeCqlPreparedStatement(session, cqlQuery, p1);
 
-    @Test
-    void testExecuteCqlPreparedStatement3() {
-        cqlExecutorMock.executeCqlPreparedStatement(sessionMock,"123","1","2","3","4");
-        Mockito.verify(cqlExecutorMock).executeCqlPreparedStatement(sessionMock,"123","1","2","3","4");
+        verify(session).prepare(cqlQuery);
+        verify(preparedStatement).bind(p1);
+        verify(boundStatement).setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM);
+        verify(session).execute(boundStatement);
+        assertEquals(resultSet, result);
     }
-
     @Test
-    void testExecuteCqlScript() {
-        cqlExecutorMock.executeCqlScript(sessionMock,"CqlScript.cql");
-        Mockito.verify(cqlExecutorMock).executeCqlScript(sessionMock,"CqlScript.cql");
+    void testExecuteCqlScript(){
+
+        try (MockedStatic <SimpleStatement> mocked = mockStatic(SimpleStatement.class)) {
+            when(SimpleStatement.newInstance(anyString())).thenReturn(simpleStatementMock);
+            when(simpleStatementMock.setConsistencyLevel(DefaultConsistencyLevel.LOCAL_QUORUM))
+                    .thenReturn(simpleStatementMock);
+            CqlExecutor executor = new CqlExecutor();
+            executor.executeCqlScript(session,"src/test/resources/test.cql");
+            verify(session, times(5)).execute(any(SimpleStatement.class));
+
+        }
     }
 }
