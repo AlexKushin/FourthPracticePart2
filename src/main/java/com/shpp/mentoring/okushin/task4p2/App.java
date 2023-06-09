@@ -23,9 +23,10 @@ public class App {
         PropertyManager.readPropertyFile("prop.properties", prop);
         logger.info("Property file was successfully read");
 
-        int numberGenerateThreads = PropertyManager.getIntPropertiesValue("numberGenerateThreads", prop) + 1;
+        int numberGenerateThreads = PropertyManager.getIntPropertiesValue("numberGenerateThreads", prop)+1;
         int numberDeliveryThreads = PropertyManager.getIntPropertiesValue("numberDeliveryThreads", prop);
         int amountProducts = PropertyManager.getIntPropertiesValue("amountProducts", prop);
+    //    int amountDelivery = PropertyManager.getIntPropertiesValue("amountDelivery", prop);
         String productType = System.getProperty("productType");
         logger.info("All necessary data were successfully read from property file");
 
@@ -103,7 +104,8 @@ public class App {
 
             logger.info("                                                           ");
             logger.info("************************************************************");
-            logger.info("AmountProduct assign in property file = {}", amountProducts);
+            logger.info("AmountProduct assigned in property file = {}", amountProducts);
+           // logger.info("AmountDelivery assigned in property file = {}", amountDelivery);
             logger.info("FILLING AVAILABLE SPEED: {} ", filingAvailableTime);
             StoreFinder storeFinder = new StoreFinder(session, cqlExecutor);
             storeFinder.findStoreAddress(productType);
