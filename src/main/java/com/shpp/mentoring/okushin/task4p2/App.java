@@ -23,10 +23,10 @@ public class App {
         PropertyManager.readPropertyFile("prop.properties", prop);
         logger.info("Property file was successfully read");
 
-        int numberGenerateThreads = PropertyManager.getIntPropertiesValue("numberGenerateThreads", prop)+1;
+        int numberGenerateThreads = PropertyManager.getIntPropertiesValue("numberGenerateThreads", prop) + 1;
         int numberDeliveryThreads = PropertyManager.getIntPropertiesValue("numberDeliveryThreads", prop);
         int amountProducts = PropertyManager.getIntPropertiesValue("amountProducts", prop);
-    //    int amountDelivery = PropertyManager.getIntPropertiesValue("amountDelivery", prop);
+        //    int amountDelivery = PropertyManager.getIntPropertiesValue("amountDelivery", prop);
         String productType = System.getProperty("productType");
         logger.info("All necessary data were successfully read from property file");
 
@@ -38,13 +38,14 @@ public class App {
             cqlExecutor.executeCqlScript(session, "DdlScripForCreatingTables.cql");
             Thread.sleep(20000);
             logger.info("Tables were successfully created");
-            csvImporter.importToDB(session, "stores.csv", "\"epicentrRepo\".stores");
-            csvImporter.importToDB(session, "types.csv", "\"epicentrRepo\".productTypes");
+            csvImporter.importToDB(session, "stores.csv", "\"epicentrRepo1\".stores");
+            csvImporter.importToDB(session, "types.csv", "\"epicentrRepo1\".productTypes");
+
 
             SimpleStatement countTypesStatement =
-                    SimpleStatement.newInstance("Select * from \"epicentrRepo\".productTypes");
+                    SimpleStatement.newInstance("Select * from \"epicentrRepo1\".productTypes");
             SimpleStatement countStoresStatement =
-                    SimpleStatement.newInstance("Select * from \"epicentrRepo\".stores");
+                    SimpleStatement.newInstance("Select * from \"epicentrRepo1\".stores");
 
             int typesCount = session.execute(countTypesStatement).all().size();
             int storesCount = session.execute(countStoresStatement).all().size();
@@ -57,11 +58,11 @@ public class App {
                     watch.stop();
                     logger.info("Generating has finished successfully");
                     double generatingTime = watch.getTime() / 1000.0;
-                    ResultSet resProd = session.execute("Select id from \"epicentrRepo\".products");
-                    int countProds = resProd.all().size();
-                    double productsPerSecond = countProds / generatingTime;
+                   // ResultSet resProd = session.execute("Select id from \"epicentrRepo1\".products");
+                  //  int countProds = resProd.all().size();
+                   double productsPerSecond = amountProducts / generatingTime;
                     logger.info("GENERATING SPEED by {} threads: {} , total = {} products, elapseSeconds = {}"
-                            , numberGenerateThreads, productsPerSecond, countProds, generatingTime);
+                            , numberGenerateThreads, productsPerSecond, amountProducts, generatingTime);
                     break;
                 }
             }
@@ -74,20 +75,24 @@ public class App {
                     watch.stop();
                     logger.info("Delivery has finished successfully");
                     double deliveryTime = watch.getTime() / 1000.0;
-                    ResultSet resDelivery = session.execute("Select * from \"epicentrRepo\".delivery");
-                    int countDelivery = resDelivery.all().size();
-                    double deliveriesPerSecond = countDelivery / deliveryTime;
+                    //ResultSet resDelivery = session.execute("Select * from \"epicentrRepo1\".delivery");
+                    //int countDelivery = resDelivery.all().size();
+                    double deliveriesPerSecond = 3000 / deliveryTime;
                     logger.info("DELIVERY SPEED by {} threads: {} , total = {} products, elapseSeconds = {}"
                             , numberDeliveryThreads, deliveriesPerSecond,
-                            countDelivery, deliveryTime);
+                            3000, deliveryTime);
                     break;
                 }
             }
+
+
             watch.reset();
-            String cqlForNumberProductsInStoreByType = "SELECT * FROM \"epicentrRepo\"." +
-                    "delivery WHERE type = ? and store = ? ";
-            String cqlForInsertAvailability = "insert into \"epicentrRepo\"." +
-                    "availability (type, store, quantity) values (?,?,?) if not exists";
+
+
+            String cqlForNumberProductsInStoreByType = "SELECT * FROM \"epicentrRepo1\"." +
+                    "delivery WHERE type_id = ? and store_id = ? ";
+            String cqlForInsertAvailability = "insert into \"epicentrRepo1\"." +
+                    "availability (type_id, store_id, quantity) values (?,?,?) if not exists";
             logger.debug("                                                    ");
             logger.debug("****************************************************");
             logger.debug("CQL ForNumberProductsInStoreByType: {}", cqlForNumberProductsInStoreByType);
@@ -98,14 +103,20 @@ public class App {
             Availability availability = new Availability();
             availability.insertAvailability(session, typesCount, storesCount,
                     cqlForNumberProductsInStoreByType, cqlForInsertAvailability);
-
+            watch.stop();
             double filingAvailableTime = watch.getTime() / 1000.0;
             watch.reset();
+
 
             logger.info("                                                           ");
             logger.info("************************************************************");
             logger.info("AmountProduct assigned in property file = {}", amountProducts);
-           // logger.info("AmountDelivery assigned in property file = {}", amountDelivery);
+            //ResultSet resDelivery = session.execute("Select * from \"epicentrRepo\".delivery");
+            // int countDelivery = resDelivery.all().size();
+
+            //  logger.info("DELIVERY count  {} ", countDelivery);
+
+
             logger.info("FILLING AVAILABLE SPEED: {} ", filingAvailableTime);
             StoreFinder storeFinder = new StoreFinder(session, cqlExecutor);
             storeFinder.findStoreAddress(productType);
@@ -116,5 +127,6 @@ public class App {
             Thread.currentThread().interrupt(); // Reset interrupted status
             logger.error("Thread was interrupted {}", e.getMessage());
         }
+
     }
 }
