@@ -2,7 +2,7 @@ package com.shpp.mentoring.okushin.task4p2;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
-import com.datastax.oss.driver.api.core.cql.*;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.shpp.mentoring.okushin.task3.PropertyManager;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ public class App {
         int numberGenerateThreads = PropertyManager.getIntPropertiesValue("numberGenerateThreads", prop) + 1;
         int numberDeliveryThreads = PropertyManager.getIntPropertiesValue("numberDeliveryThreads", prop);
         int amountProducts = PropertyManager.getIntPropertiesValue("amountProducts", prop);
-        //    int amountDelivery = PropertyManager.getIntPropertiesValue("amountDelivery", prop);
+        int amountDelivery = amountProducts * numberDeliveryThreads;
         String productType = System.getProperty("productType");
         logger.info("All necessary data were successfully read from property file");
 
@@ -58,9 +58,7 @@ public class App {
                     watch.stop();
                     logger.info("Generating has finished successfully");
                     double generatingTime = watch.getTime() / 1000.0;
-                   // ResultSet resProd = session.execute("Select id from \"epicentrRepo1\".products");
-                  //  int countProds = resProd.all().size();
-                   double productsPerSecond = amountProducts / generatingTime;
+                    double productsPerSecond = amountProducts / generatingTime;
                     logger.info("GENERATING SPEED by {} threads: {} , total = {} products, elapseSeconds = {}"
                             , numberGenerateThreads, productsPerSecond, amountProducts, generatingTime);
                     break;
@@ -73,10 +71,7 @@ public class App {
             while (true) {
                 if (delivery.isDeliveryFinished()) {
                     watch.stop();
-                    logger.info("Delivery has finished successfully");
                     double deliveryTime = watch.getTime() / 1000.0;
-                    //ResultSet resDelivery = session.execute("Select * from \"epicentrRepo1\".delivery");
-                    //int countDelivery = resDelivery.all().size();
                     double deliveriesPerSecond = 3000 / deliveryTime;
                     logger.info("DELIVERY SPEED by {} threads: {} , total = {} products, elapseSeconds = {}"
                             , numberDeliveryThreads, deliveriesPerSecond,
@@ -84,8 +79,6 @@ public class App {
                     break;
                 }
             }
-
-
             watch.reset();
 
 
@@ -111,20 +104,14 @@ public class App {
             logger.info("                                                           ");
             logger.info("************************************************************");
             logger.info("AmountProduct assigned in property file = {}", amountProducts);
-            //ResultSet resDelivery = session.execute("Select * from \"epicentrRepo\".delivery");
-            // int countDelivery = resDelivery.all().size();
-
-            //  logger.info("DELIVERY count  {} ", countDelivery);
-
-
+            logger.info("DELIVERY count  {} ", amountDelivery);
             logger.info("FILLING AVAILABLE SPEED: {} ", filingAvailableTime);
             StoreFinder storeFinder = new StoreFinder(session, cqlExecutor);
             storeFinder.findStoreAddress(productType);
-
             logger.info("************************************************************");
             logger.info("                                                           ");
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt(); // Reset interrupted status
+            Thread.currentThread().interrupt(); // Reset interrupted status?
             logger.error("Thread was interrupted {}", e.getMessage());
         }
 
